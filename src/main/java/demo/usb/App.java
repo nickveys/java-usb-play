@@ -21,8 +21,10 @@ public class App {
     if (maybeDevice.isPresent()) {
       UsbDevice device = maybeDevice.get();
       System.out.println("Scale found: " + device);
-      M10 m10 = new M10(device);
-      System.out.println(m10.read());
+
+      try (M10 m10 = new M10(device)) {
+        System.out.println(m10.read());
+      }
     } else {
       System.out.println("Scale not found!");
     }
