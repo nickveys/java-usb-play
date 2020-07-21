@@ -15,5 +15,5 @@ dependencies {
 }
 
 application {
-    mainClassName = 'usb.play.App'
+    mainClassName = 'demo.usb.App'
 }

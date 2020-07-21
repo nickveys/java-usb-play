@@ -7,21 +7,24 @@ public class M10Value {
 
   private final M10State state;
 
-  private final M10Scale scale;
+  private final M10Mode mode;
 
   private final double value;
 
   private double toValue(byte val0, byte val1) {
-    return ((short) (val1 << 8 | val0)) / 10.0;
+    return ((short) ((short) val1 << 8 | val0)) / 10.0;
   }
 
   public M10Value(byte[] data) {
     if (data.length != EXPECTED_DATA_LENGTH) {
-      throw new IllegalStateException("Unexpected data length");
+      throw new IllegalStateException("Unexpected data length " + data.length);
     }
 
-    this.state = M10State.toState(data[2]);
-    this.scale = M10Scale.toScale(data[3]);
+    System.out.printf("%02X %02X %02X %02X %02X %02X\n",
+      data[0], data[1], data[2], data[3], data[4], data[5]);
+
+    this.state = M10State.toState(data[1]);
+    this.mode = M10Mode.toMode(data[2]);
     this.value = toValue(data[4], data[5]);
   }
 
@@ -29,12 +32,13 @@ public class M10Value {
     return M10State.Negative.equals(state) ? -1 : 1;
   }
 
+  @Override
   public String toString() {
     switch (state) {
       case Maximum:
-        return "Max Value " + scale.toString();
+        return "Max Value " + mode.toString();
       default:
-        return String.format("%0.2f %s", value * getMultiplier(), scale.toString());
+        return String.format("%0.2f %s", value * getMultiplier(), mode.toString());
     }
   }
 
@@ -53,37 +57,24 @@ public class M10Value {
         case 6:
           return Maximum;
         default:
-          throw new IllegalArgumentException("Unknown value");
+          throw new IllegalArgumentException("Unknown state value " + value);
       }
     }
   }
 
-  enum M10Scale {
+  enum M10Mode {
 
     Ounces, Grams;
 
-    public static M10Scale toScale(byte value) {
+    public static M10Mode toMode(byte value) {
       switch (value) {
         case 2:
           return Grams;
         case 11:
           return Ounces;
         default:
-          throw new IllegalArgumentException("Unknown value");
+          throw new IllegalArgumentException("Unknown mode value " + value);
       }
     }
   }
 }
-
-// private static void print(byte[] data) {
-// byte mode = data[2];
-// byte scaling = data[3];
-// byte val0 = data[4];
-// byte val1 = data[5];
-
-// short val = (short) (val1 << 8 | val0);
-
-// System.out.printf("%02x %02x %02x %02x %d %f %f", mode, scaling, val0, val1,
-// val, (val / 10.0),
-// (val / 16.0) / 10.0);
-// }
